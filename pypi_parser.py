@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 
 #from urllib.request import urlopen
 import logging
@@ -141,6 +142,7 @@ else:
     def get_list_of_packages():
         return CLIENT.list_packages()
 
+
 def get_packages():
     package_names = get_list_of_packages()
     
@@ -158,47 +160,40 @@ def get_packages():
 
 def build_html(packages_list):
     total_html = '''<table><tr><th>Package</th><th>Downloads</th></tr>%s</table>'''
-    rows = []
     row_template = '''<tr class="py3{py3}"><td><a href="{url}" timestamp="{timestamp}">{name}</a></td><td>{downloads}</td></tr>'''
-    for package in reversed(packages_list):
-        rows.append(row_template.format(**package))
-
-    return total_html % '\n'.join(rows)
+    return total_html % '\n'.join(row_template.format(**package) for package in reversed(packages_list))
 
 
 def count_good(packages_list):
-    good = 0
-    for package in packages_list:
-        if package.py3:
-            good += 1
-    return good
+    return len([package for package in packages_list if package.py3])
+
 
 def remove_irrelevant_packages(packages):
     to_ignore = 'multiprocessing', 'simplejson', 'argparse', 'uuid', 'setuptools'
     for pkg in packages:
-        if pkg['name'] in to_ignore:
-            continue
-        else:
+        if not pkg['name'] in to_ignore:
             yield pkg
 
 
 def main():
-    packages = get_packages()
-    packages = remove_irrelevant_packages(packages)
-    packages = list(packages)
+    packages = list(remove_irrelevant_packages(get_packages()))
     def get_downloads(x): return x['downloads']
     packages.sort(key=get_downloads)
 
     # just for backup
-    open('results.txt', 'w').write(pprint.pformat(packages))
+    with open('results.txt', 'w') as out_file:
+        out_file.write(pprint.pformat(packages))
 
     top = packages[-how_many_to_chart:]
     html = build_html(top)
 
-    open('results.html', 'w').write(html)
+    with open('results.html', 'w') as out_file:
+        out_file.write(html)
     
-    open('count.txt', 'w').write('%d/%d' % (count_good(top), len(top)))
-    open('date.txt', 'w').write(datetime.datetime.now().isoformat())
+    with open('count.txt', 'w') as out_file:
+        out_file.write('%d/%d' % (count_good(top), len(top)))
+    with open('date.txt', 'w') as out_file:
+        out_file.write(datetime.datetime.now().isoformat())
 
 def test():
     print(get_package_info('argparse'))
@@ -206,5 +201,3 @@ def test():
 if __name__ == '__main__':
     #main()
     test()
-
-    

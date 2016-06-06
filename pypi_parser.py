@@ -140,12 +140,14 @@ def get_package_info(name):
 
 if is_app_engine:
     def get_list_of_packages():
-        return CLIENT.list_packages()
+        # return CLIENT.list_packages()
+        return [pkg_name for pkg_name, downloads in CLIENT.top_packages(how_many_to_chart)]
 else:
     #from filecache import filecache
     #@filecache(24 * 60 * 60)
     def get_list_of_packages():
-        return CLIENT.list_packages()
+        # return CLIENT.list_packages()
+        return [pkg_name for pkg_name, downloads in CLIENT.top_packages(how_many_to_chart)]
 
 def get_packages():
     package_names = get_list_of_packages()

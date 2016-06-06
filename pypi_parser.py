@@ -1,4 +1,6 @@
 
+#!/usr/bin/env python
+
 #from urllib.request import urlopen
 import logging
 from urllib import urlopen
@@ -24,7 +26,7 @@ if is_app_engine:
     '''
     `set_default_fetch_deadline` to avoid the following errors:
     http://stackoverflow.com/questions/13051628/gae-appengine-deadlineexceedederror-deadline-exceeded-while-waiting-for-htt
-    
+
     Failed to fetch http://pypi.python.org/pypi, caused by: Traceback (most recent call last):
     File "/base/data/home/apps/s~python3wos2/1.389386800936840076/pypi_parser.py", line 37, in request
         headers={'Content-Type': 'text/xml'})
@@ -37,7 +39,7 @@ if is_app_engine:
     DeadlineExceededError: Deadline exceeded while waiting for HTTP response from URL: http://pypi.python.org/pypi
     '''
     urlfetch.set_default_fetch_deadline(60)
-    
+
     class GAEXMLRPCTransport(object):
         """Handles an HTTP transaction to an XML-RPC server."""
 
@@ -52,13 +54,13 @@ if is_app_engine:
                                           payload=request_body,
                                           method=urlfetch.POST,
                                           headers={'Content-Type': 'text/xml'})
-            except Exception, e:
+            except Exception as e:
                 msg = 'Failed to fetch %s, caused by: %s' % (url, traceback.format_exc())
                 logging.error(msg)
                 raise xmlrpclib.ProtocolError(host + handler, 500, msg, {})
 
             if response.status_code != 200:
-                logging.error('%s returned status code %s' % 
+                logging.error('%s returned status code %s' %
                               (url, response.status_code))
                 raise xmlrpclib.ProtocolError(host + handler,
                                               response.status_code,
@@ -73,7 +75,7 @@ if is_app_engine:
             p, u = xmlrpclib.getparser(use_datetime=False)
             p.feed(response_body)
             return u.close()
-        
+
     CLIENT = xmlrpclib.ServerProxy('http://pypi.python.org/pypi', GAEXMLRPCTransport())
 else:
     CLIENT = xmlrpclib.ServerProxy('http://pypi.python.org/pypi')
@@ -87,7 +89,7 @@ def get_package_info(name):
     # Maybe we don't need to `lower`? I'm confused.
     safe_name = name
     release_list = CLIENT.package_releases(safe_name, True)
-    
+
     downloads = 0
     py3 = False
     py2only = False
@@ -104,7 +106,7 @@ def get_package_info(name):
                 urls_metadata_list = CLIENT.release_urls(safe_name, release)
                 release_metadata = CLIENT.release_data(safe_name, release)
                 break
-            except xmlrpclib.ProtocolError, e:
+            except xmlrpclib.ProtocolError as e:
                 # retry 3 times
                 strace = traceback.format_exc()
                 logging.error("retry %s xmlrpclib: %s" % (i, strace))
@@ -113,7 +115,7 @@ def get_package_info(name):
             raise Exception("Failed to fetch release metadata for release: %s" % release)
 
         url = release_metadata['package_url']
-        
+
         if most_recent:
             most_recent = False
             # to avoid checking for 3.1, 3.2 etc, lets just str the classifiers
@@ -140,13 +142,13 @@ def get_package_info(name):
 
 if is_app_engine:
     def get_list_of_packages():
-        # return CLIENT.list_packages()
+        # return CLIENT.list_packages()  # currently returns 81,901 package names!!
         return [pkg_name for pkg_name, downloads in CLIENT.top_packages(how_many_to_chart)]
 else:
-    #from filecache import filecache
-    #@filecache(24 * 60 * 60)
+    # from filecache import filecache
+    # @filecache(24 * 60 * 60)
     def get_list_of_packages():
-        # return CLIENT.list_packages()
+        # return CLIENT.list_packages()  # currently returns 81,901 package names!!
         return [pkg_name for pkg_name, downloads in CLIENT.top_packages(how_many_to_chart)]
 
 def get_packages():
@@ -156,14 +158,14 @@ def get_packages():
     for pkg in package_names:
         try:
             info = get_package_info(pkg)
-        except Exception, e:
+        except Exception as e:
             print(pkg)
             print(e)
             exceptions.append(e)
             continue
             # raise exceptions later after you tried updating all of the packages.
             
-        print info
+        print(info)
         yield info
     
     for e in exceptions:
@@ -181,11 +183,7 @@ def build_html(packages_list):
 
 
 def count_good(packages_list):
-    good = 0
-    for package in packages_list:
-        if package.py3:
-            good += 1
-    return good
+    return len([package for package in packages_list if package.py3])
 
 def remove_irrelevant_packages(packages):
     to_ignore = 'multiprocessing', 'simplejson', 'argparse', 'uuid', 'setuptools'
@@ -204,21 +202,23 @@ def main():
     packages.sort(key=get_downloads)
 
     # just for backup
-    open('results.txt', 'w').write(pprint.pformat(packages))
+    with open('results.txt', 'w') as out_file:
+        out_file.write(pprint.pformat(packages))
 
     top = packages[-how_many_to_chart:]
     html = build_html(top)
 
-    open('results.html', 'w').write(html)
-    
-    open('count.txt', 'w').write('%d/%d' % (count_good(top), len(top)))
-    open('date.txt', 'w').write(datetime.datetime.now().isoformat())
+    with open('results.html', 'w') as out_file:
+        out_file.write(html)
+
+    with open('count.txt', 'w') as out_file:
+        out_file.write('%d/%d' % (count_good(top), len(top)))
+    with open('date.txt', 'w') as out_file:
+        out_file.write(datetime.datetime.now().isoformat())
 
 def test():
     print(get_package_info('Shinken'))
-    
-if __name__ == '__main__':
-    #main()
-    test()
 
-    
+if __name__ == '__main__':
+    # main()
+    test()

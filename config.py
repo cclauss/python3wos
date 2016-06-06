@@ -1,22 +1,8 @@
 import os
 
-
-HTML_CACHE_KEY = "WOShtml"
-
-
-DEV = False
-LIVE = False
-
+HTML_CACHE_KEY = 'WOShtml'
 SERVER_SOFTWARE = 'SERVER_SOFTWARE'
-
-if SERVER_SOFTWARE in os.environ:
-    if os.environ[SERVER_SOFTWARE].startswith('Google'):
-        # remote google apps
-        LIVE = True
-    elif os.environ[SERVER_SOFTWARE].startswith('Development'):
-        # local dev server
-        # True sometimes works
-        DEV = True
-
+server_software_str = os.getenv(SERVER_SOFTWARE, '')
+LIVE = server_software_str.startswith('Google')      # remote google apps
+DEV = server_software_str.startswith('Development')  # local dev server
 GAE = LIVE or DEV
-

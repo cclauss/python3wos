@@ -1,7 +1,8 @@
 import cPickle
-import zlib
 import datetime
+import json
 import traceback
+import zlib
 
 from google.appengine.ext import webapp
 from google.appengine.ext import db
@@ -11,28 +12,13 @@ import pypi_parser
 from models import Package
 import config
 
-UPDATE_AT_A_TIME = 10
-
-if config.DEV:
-    # faster when developing
-    UPDATE_AT_A_TIME = 2
-
+UPDATE_AT_A_TIME = 2 if config.DEV else 10  # go faster when developing
 
 DB_STEPS = 400
 
 #TO_IGNORE = 'multiprocessing', 'simplejson', 'argparse', 'uuid', 'setuptools', 'Jinja', 'unittest2'
-EQUIVALENTS = {
-    'multiprocessing': 'https://docs.python.org/3/library/multiprocessing.html',
-    'argparse': 'https://docs.python.org/3/library/argparse.html',
-    'uuid': 'https://docs.python.org/3/library/uuid.html',
-    'unittest2': 'https://docs.python.org/3/library/unittest.html',
-    'simplejson': 'https://docs.python.org/3/library/json.html',
-    'futures': 'http://docs.python.org/3/library/concurrent.futures.html',
-    'ipaddr': 'https://docs.python.org/3/library/ipaddress.html',
-    'MySQL-python': 'https://pypi.python.org/pypi/mysqlclient',
-    'python-openid': 'https://github.com/necaris/python3-openid',
-    'suds': 'https://pypi.python.org/pypi/suds-jurko',
-    }
+with open('equivalent_modules.json') as in_file:
+    EQUIVALENTS = json.load(in_file)
 
 # the following have a dup on the list
 # setuptools - distribute
@@ -73,17 +59,14 @@ def update_list_of_packages():
     package_names = get_mcache_package_list()
     package_index = memcache.get(PACKAGES_CHECKED_INDEX)
 
-    if package_index is None:
-        package_index = 0
+    package_index = package_index or 0
     
     if package_names is None:
         package_names = pypi_parser.get_list_of_packages()
         set_mcache_package_list(package_names)
 
     for name in package_names[package_index:package_index + DB_STEPS]:
-        if name in TO_IGNORE:
-            pass
-        else:
+        if not name in TO_IGNORE:
             query = db.GqlQuery("SELECT __key__ FROM Package WHERE name = :name", name=name)
             if len(list(query)) == 0:
                 p = Package(name=name)
@@ -119,7 +102,7 @@ def update_handler(self, packages):
     self.response.out.write('\r\n')
 
     packages_list = list(packages)
-    if len(packages_list) == 0:
+    if not packages_list:
         update_list_of_packages()
 
     for pkg in packages_list:
@@ -155,10 +138,7 @@ class PackageList(webapp.RequestHandler):
         # get outdated package infos
         i = update_list_of_packages()
         self.response.out.write("%d" % i)
-        if i == -1:
-            next_url = ''
-        else:
-            next_url = '#'
+        next_url = '' if i == -1 else '#'
         context = {
             'title': 'Updating package list',
             'current_name': str(i),
@@ -166,6 +146,7 @@ class PackageList(webapp.RequestHandler):
             'next_url': next_url,
         }
         self.response.out.write(template.render('redirect.html', context))
+
 
 class EraseToIgnore(webapp.RequestHandler):
     def get(self):
@@ -198,6 +179,7 @@ class EraseDups(webapp.RequestHandler):
                             dups[i].delete()
             done_already.add(pkg.name)
 
+
 class ClearCache(webapp.RequestHandler):
     def get(self):
         from google.appengine.api import memcache
@@ -214,7 +196,7 @@ class update_models(webapp.RequestHandler):
         from google.appengine.ext.webapp import template
         url_n_template = 'update_models'
         name = self.request.get('name', None)
-        if name is None:
+        if not name:
             # First request, just get the first name out of the datastore.
             pkg = Package.gql('ORDER BY name DESC').get()
             name = pkg.name
@@ -233,10 +215,7 @@ class update_models(webapp.RequestHandler):
             #fix_equivalence(current_pkg)
             #current_pkg.py2only = False
             
-            if current_pkg.name in ('pylint', 'docutils'):
-                current_pkg.force_green = True
-            else:
-                current_pkg.force_green = False
+            current_pkg.force_green = current_pkg.name in ('pylint', 'docutils')
             current_pkg.put()
             # end of modify models
 
@@ -247,19 +226,19 @@ class update_models(webapp.RequestHandler):
         }
         self.response.out.write(template.render('%s.html' % url_n_template, context))
 
+
 class update_single(webapp.RequestHandler):
     def get(self):
         name = self.request.get('name', None)
         q = Package.gql('WHERE name = :1', name)
         items = q.fetch(limit=1)
-        if len(items) == 0:
+        if not items:
             self.response.out.write('did not find "%s"' % name)
             return
         pkg = items[0]
         pkg = update_package_info(pkg)
         self.response.out.write(str(pkg))
 
-        
 
 def profile_main():
     '''
@@ -283,6 +262,5 @@ def profile_main():
 to_profile_func = None
 #to_profile_func = update_list_of_packages
 
-if to_profile_func is not None:
-    to_profile_str = to_profile_func.__name__
-    globals()[to_profile_str] = profile_main
+if to_profile_func:
+    globals()[to_profile_func.__name__] = profile_main

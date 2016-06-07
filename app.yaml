@@ -1,6 +1,6 @@
 application: python3wos2
 version: 1
-runtime: python
+runtime: python27
 api_version: 1
 threadsafe: true
 
@@ -13,14 +13,15 @@ handlers:
   static_dir: static
 
 - url: /tasks/.*
-  script: wsgi.app
+  script: wsgi.py
   login: admin
 
 - url: /.*
-  script: wsgi.app
+  script: wsgi.py
   secure: optional
 
 skip_files:
+- .*\.deprecated
 - .*\.cache.*
 - .*\.log
 - .*\.svn

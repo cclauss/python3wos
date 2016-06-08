@@ -8,7 +8,7 @@ cron:
   schedule: every 60 minutes
 
 - description: clear memcache before weekly update
-  url: /tasks/clear_cache
+  url: /tasks/clear_packages_cache
   schedule: every sunday 08:55
 
 - description: weekly update list of packages

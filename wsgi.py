@@ -19,6 +19,7 @@ app = webapp.WSGIApplication(
         ('/tasks/erase_to_ignore', pypi_cron.EraseToIgnore),
         ('/tasks/erase_dups', pypi_cron.EraseDups),
         ('/tasks/clear_cache', pypi_cron.ClearCache),
+        ('/tasks/clear_packages_cache', pypi_cron.ClearPackagesCache),
         ('/tasks/update_models', pypi_cron.update_models),
         ('/tasks/update_single', pypi_cron.update_single),
     ],

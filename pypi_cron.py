@@ -207,6 +207,15 @@ class ClearCache(webapp.RequestHandler):
         self.response.out.write("result: %s" % result)
 
 
+class ClearPackagesCache(webapp.RequestHandler):
+    def get(self):
+        from google.appengine.api import memcache
+        self.response.out.write("clearing package cache")
+        results = [memcache.delete(PACKAGES_CACHE_KEY),
+                   memcache.delete(PACKAGES_CHECKED_INDEX)]
+        self.response.out.write("results: %s" % results)
+
+
 # Request handler for the URL /update_datastore
 class update_models(webapp.RequestHandler):
     def get(self):

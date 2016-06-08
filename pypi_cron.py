@@ -71,10 +71,7 @@ def set_mcache_package_list(package_names):
 
 def update_list_of_packages():
     package_names = get_mcache_package_list()
-    package_index = memcache.get(PACKAGES_CHECKED_INDEX)
-
-    if package_index is None:
-        package_index = 0
+    package_index = memcache.get(PACKAGES_CHECKED_INDEX) or 0
     
     if package_names is None:
         package_names = pypi_parser.get_list_of_packages()

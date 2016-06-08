@@ -4,12 +4,15 @@
 #from urllib.request import urlopen
 import logging
 from urllib import urlopen
-import xmlrpclib
 import pprint
 import re
 import os
 import datetime
 import traceback
+try:                 # Python 3
+    from xmlrpc.client import ServerProxy
+except ImportError:  # Python 2
+    from xmlrpclib import ServerProxy
 
 import config
 
@@ -76,9 +79,9 @@ if is_app_engine:
             p.feed(response_body)
             return u.close()
 
-    CLIENT = xmlrpclib.ServerProxy('http://pypi.python.org/pypi', GAEXMLRPCTransport())
+    CLIENT = ServerProxy('http://pypi.python.org/pypi', GAEXMLRPCTransport())
 else:
-    CLIENT = xmlrpclib.ServerProxy('http://pypi.python.org/pypi')
+    CLIENT = ServerProxy('http://pypi.python.org/pypi')
 
 class NoReleasesException(Exception):
     pass

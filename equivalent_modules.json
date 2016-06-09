@@ -2,7 +2,7 @@
     "argparse": "https://docs.python.org/3/library/argparse.html",
     "BeautifulSoup": "https://pypi.python.org/pypi/beautifulsoup4",
     "fabric": "https://github.com/mathiasertl/fabric",
-    "functools32": "http://docs.python.org/3/library/functools.html",
+    "functools32": "https://docs.python.org/3/library/functools.html",
     "futures": "http://docs.python.org/3/library/concurrent.futures.html",
     "ipaddr": "https://docs.python.org/3/library/ipaddress.html",
     "ipaddress": "https://docs.python.org/3/library/ipaddress.html",
@@ -11,6 +11,7 @@
     "ordereddict": "https://docs.python.org/3/library/collections.html#collections.OrderedDict",
     "python-openid": "https://github.com/necaris/python3-openid",
     "simplejson": "https://docs.python.org/3/library/json.html",
+    "ssl": "https://docs.python.org/3/library/ssl.html",
     "suds": "https://pypi.python.org/pypi/suds-jurko",
     "unittest2": "https://docs.python.org/3/library/unittest.html",
     "uuid": "https://docs.python.org/3/library/uuid.html"

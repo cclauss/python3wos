@@ -113,14 +113,8 @@ class NoReleasesException(Exception):
     pass
 
 def fix_equivalence(pkg):
-    if pkg.name in EQUIVALENTS:
-        pkg.equivalent_url = EQUIVALENTS[pkg.name]
-    else:
-        pkg.equivalent_url = None
-    if pkg.name in FORCE_GREEN:
-        pkg.force_green = True
-    else:
-        pkg.force_green = False
+    pkg.equivalent_url = EQUIVALENTS.get(pkg.name, None)
+    pkg.force_green = pkg.name in FORCE_GREEN
 
 def get_package_info(name, downloads=0):
     metadata_url = PACKAGE_INFO_FMT.format(package_index_url=PYPI_URL, package=name)
@@ -163,7 +157,7 @@ def get_packages():
         print(pkg_name, downloads)
         try:
             info = get_package_info(pkg_name, downloads=downloads)
-        except Exception, e:
+        except Exception as e:
             print(pkg_name)
             print(e)
             exceptions.append(e)
@@ -215,5 +209,3 @@ def test():
 if __name__ == '__main__':
     #main()
     test()
-
-    

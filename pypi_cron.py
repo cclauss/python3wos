@@ -34,11 +34,8 @@ def fetch_and_cache_package_info():
 
 
 def get_packages_list_from_cache_or_pypi():
-    packages = get_and_decompress(PACKAGES_CACHE_KEY)
-    if packages is None:
-        return fetch_and_cache_package_info()
-    else:
-        return packages
+    return get_and_decompress(PACKAGES_CACHE_KEY) or fetch_and_cache_package_info()
+
 
 def update_handler(self):
     self.response.headers['Content-Type'] = 'text/plain'
@@ -46,7 +43,7 @@ def update_handler(self):
 
     try:
         fetch_and_cache_package_info()
-    except Exception, e:
+    except Exception as e:
         self.response.out.write(" - %s" % e)
         strace = traceback.format_exc()
         self.response.out.write(strace)

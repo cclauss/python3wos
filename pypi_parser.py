@@ -27,7 +27,6 @@ FORCE_GREEN = set([
 EQUIVALENTS = {
     'argparse': 'https://docs.python.org/3/library/argparse.html',
     'BeautifulSoup': 'http://pypi.python.org/pypi/beautifulsoup4/',
-    'dnspython': 'http://pypi.python.org/pypi/dnspython3',
     'Fabric': 'https://pypi.python.org/pypi/Fabric3',
     'functools32': 'https://docs.python.org/3/library/functools.html',
     'futures': 'http://docs.python.org/3/library/concurrent.futures.html',
@@ -36,14 +35,11 @@ EQUIVALENTS = {
     'MySQL-python': 'https://pypi.python.org/pypi/mysqlclient',
     'multiprocessing': 'https://docs.python.org/3/library/multiprocessing.html',
     'ordereddict': 'http://docs.python.org/3/library/collections.html#collections.OrderedDict',
-    'python-memcached': 'https://pypi.python.org/pypi/python3-memcached',
-    'python-openid': 'https://github.com/necaris/python3-openid',
     'simplejson': 'https://docs.python.org/3/library/json.html',
     'suds': 'https://pypi.python.org/pypi/suds-jurko',
     'ssl': 'http://docs.python.org/3/library/ssl.html',
     'unittest2': 'https://docs.python.org/3/library/unittest.html',
     'uuid': 'https://docs.python.org/3/library/uuid.html',
-    'xlwt': 'https://pypi.python.org/pypi/xlwt-future',
 }
 
 
